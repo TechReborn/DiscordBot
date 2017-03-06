@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/modmuss50/discordBot/minecraft"
+	"github.com/modmuss50/discordBot/fileutil"
 	"github.com/bwmarrin/discordgo"
-	"io/ioutil"
+	"time"
 )
 
 var (
@@ -13,6 +14,12 @@ var (
 )
 
 func main() {
+	ticker := time.NewTicker(time.Second * 30)
+	go func() {
+		for range ticker.C {
+			//TODO check to see if the version has changed
+		}
+	}()
 	LoadDiscord()
 }
 
@@ -60,11 +67,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 //Loads the token from the file
 func getToken() string {
-	b, err := ioutil.ReadFile("token.txt")
-	if err != nil {
-		fmt.Print(err)
-	}
-	return string(b)
+	return fileutil.ReadStringFromFile("token.txt")
 }
 
 
