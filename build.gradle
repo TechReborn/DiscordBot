@@ -1,0 +1,9 @@
+plugins {
+    id 'org.echocat.golang' version '0.1.15'
+}
+
+group 'github.com/modmuss50/discordBot'
+
+golang {
+    platforms = System.getProperty("platforms", "linux-amd64,windows-amd64,darwin-amd64")
+}
