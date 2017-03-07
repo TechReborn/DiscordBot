@@ -28,7 +28,6 @@ func main() {
 			if !Connected {
 				return
 			}
-			fmt.Println("Test1")
 			var latest = minecraft.GetLatest()
 			if FirstCheck == true {
 				LastLatest = latest.Release
@@ -36,9 +35,7 @@ func main() {
 				FirstCheck = false
 
 			} else {
-				fmt.Println("Test2")
 				for _,element := range fileutil.ReadLinesFromFile("channels.txt") {
-					fmt.Println("Test3")
 					if latest.Release != LastLatest{
 						DiscordClient.ChannelMessageSend(element, "A new release version of minecraft was just released! : " + latest.Release)
 					}
@@ -102,6 +99,20 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Content == "!verNotify" {
 		fileutil.AppendStringToFile(m.ChannelID, "channels.txt")
 		_, _ = s.ChannelMessageSend(m.ChannelID, "The bot will now annouce new minecraft versions here!")
+	}
+
+	if m.Content == "!commands" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "The following commands are advalibe for you to use. `!version`, `!issue`, `!wiki`, `!jei`")
+	}
+
+	if m.Content == "!issuse" || m.Content == "!issue" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "You can report an bug on our issuse tracker here: https://github.com/TechReborn/TechReborn/issues Please take a quick look to check that your isssus hasnt been reported before.")
+	}
+	if m.Content == "!wiki" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "We have a wiki located here: https://wiki.techreborn.ovh/ Please not not all the content is present at the current time.")
+	}
+	if m.Content == "!jei" {
+		_, _ = s.ChannelMessageSend(m.ChannelID, "JEI is a great mod to use to findout how to craft something, TechReborn has full support. You can download JEI from here: https://minecraft.curseforge.com/projects/just-enough-items-jei")
 	}
 }
 
