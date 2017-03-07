@@ -102,7 +102,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "!commands" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "The following commands are advalibe for you to use. `!version`, `!issue`, `!wiki`, `!jei`")
+		_, _ = s.ChannelMessageSend(m.ChannelID, "The following commands are available for you to use. `!version`, `!issue`, `!wiki`, `!jei`")
 	}
 
 	if m.Content == "!issuse" || m.Content == "!issue" {
