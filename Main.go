@@ -22,7 +22,7 @@ func main() {
 
 	FirstCheck = true
 
-	ticker := time.NewTicker(time.Second * 5)
+	ticker := time.NewTicker(time.Second * 30)
 	go func() {
 		for range ticker.C {
 			if !Connected {
