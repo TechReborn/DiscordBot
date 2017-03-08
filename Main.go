@@ -2,19 +2,19 @@ package main
 
 import (
 	"fmt"
-	"github.com/modmuss50/discordBot/minecraft"
-	"github.com/modmuss50/discordBot/fileutil"
 	"github.com/bwmarrin/discordgo"
+	"github.com/modmuss50/discordBot/fileutil"
+	"github.com/modmuss50/discordBot/minecraft"
 	"time"
 )
 
 var (
-	Token string
-	BotID string
-	FirstCheck bool
-	Connected bool
-	LastLatest string
-	LastSnapshot string
+	Token         string
+	BotID         string
+	FirstCheck    bool
+	Connected     bool
+	LastLatest    string
+	LastSnapshot  string
 	DiscordClient *discordgo.Session
 )
 
@@ -35,12 +35,12 @@ func main() {
 				FirstCheck = false
 
 			} else {
-				for _,element := range fileutil.ReadLinesFromFile("channels.txt") {
-					if latest.Release != LastLatest{
-						DiscordClient.ChannelMessageSend(element, "A new release version of minecraft was just released! : " + latest.Release)
+				for _, element := range fileutil.ReadLinesFromFile("channels.txt") {
+					if latest.Release != LastLatest {
+						DiscordClient.ChannelMessageSend(element, "A new release version of minecraft was just released! : "+latest.Release)
 					}
-					if latest.Snapshot != LastSnapshot{
-						DiscordClient.ChannelMessageSend(element, "A new snapshot version of minecraft was just released! : " + latest.Snapshot)
+					if latest.Snapshot != LastSnapshot {
+						DiscordClient.ChannelMessageSend(element, "A new snapshot version of minecraft was just released! : "+latest.Snapshot)
 					}
 				}
 
@@ -49,7 +49,6 @@ func main() {
 			}
 		}
 	}()
-
 
 	LoadDiscord()
 }
@@ -93,26 +92,26 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 	if m.Content == "!version" {
 		var latest = minecraft.GetLatest()
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Latest snapshot: " + latest.Snapshot)
-		_, _ = s.ChannelMessageSend(m.ChannelID, "Latest release: " + latest.Release)
+		s.ChannelMessageSend(m.ChannelID, "Latest snapshot: "+latest.Snapshot)
+		s.ChannelMessageSend(m.ChannelID, "Latest release: "+latest.Release)
 	}
 	if m.Content == "!verNotify" {
 		fileutil.AppendStringToFile(m.ChannelID, "channels.txt")
-		_, _ = s.ChannelMessageSend(m.ChannelID, "The bot will now annouce new minecraft versions here!")
+		s.ChannelMessageSend(m.ChannelID, "The bot will now annouce new minecraft versions here!")
 	}
 
 	if m.Content == "!commands" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "The following commands are available for you to use. `!version`, `!issue`, `!wiki`, `!jei`")
+		s.ChannelMessageSend(m.ChannelID, "The following commands are available for you to use. `!version`, `!issue`, `!wiki`, `!jei`")
 	}
 
 	if m.Content == "!issuse" || m.Content == "!issue" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "You can report an bug on our issuse tracker here: https://github.com/TechReborn/TechReborn/issues Please take a quick look to check that your isssus hasnt been reported before.")
+		s.ChannelMessageSend(m.ChannelID, "You can report an bug on our issuse tracker here: https://github.com/TechReborn/TechReborn/issues Please take a quick look to check that your isssus hasnt been reported before.")
 	}
 	if m.Content == "!wiki" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "We have a wiki located here: https://wiki.techreborn.ovh/ Please not not all the content is present at the current time.")
+		s.ChannelMessageSend(m.ChannelID, "We have a wiki located here: https://wiki.techreborn.ovh/ Please not not all the content is present at the current time.")
 	}
 	if m.Content == "!jei" {
-		_, _ = s.ChannelMessageSend(m.ChannelID, "JEI is a great mod to use to findout how to craft something, TechReborn has full support. You can download JEI from here: https://minecraft.curseforge.com/projects/just-enough-items-jei")
+		s.ChannelMessageSend(m.ChannelID, "JEI is a great mod to use to findout how to craft something, TechReborn has full support. You can download JEI from here: https://minecraft.curseforge.com/projects/just-enough-items-jei")
 	}
 }
 
@@ -120,6 +119,3 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 func getToken() string {
 	return fileutil.ReadStringFromFile("token.txt")
 }
-
-
-

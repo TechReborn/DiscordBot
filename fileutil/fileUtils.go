@@ -1,11 +1,11 @@
 package fileutil
 
 import (
-	"io/ioutil"
-	"fmt"
-	"os"
-	"log"
 	"bufio"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
 )
 
 func ReadStringFromFile(file string) string {
@@ -21,11 +21,11 @@ func WriteStringToFile(str string, file string) {
 }
 
 func AppendStringToFile(str string, file string) {
-		if FileExists(file) {
-				WriteStringToFile( ReadStringFromFile(file) + "\n" + str, file)
-		} else {
-				WriteStringToFile(str, file)
-		}
+	if FileExists(file) {
+		WriteStringToFile(ReadStringFromFile(file)+"\n"+str, file)
+	} else {
+		WriteStringToFile(str, file)
+	}
 }
 
 func FileExists(file string) bool {
@@ -34,7 +34,6 @@ func FileExists(file string) bool {
 	}
 	return false
 }
-
 
 func ReadLinesFromFile(fileName string) []string {
 	file, err := os.Open(fileName)

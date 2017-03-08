@@ -1,12 +1,12 @@
 package minecraft
 
 import (
-	"net/http"
-	"time"
 	"bytes"
-	"unsafe"
 	"encoding/json"
 	"log"
+	"net/http"
+	"time"
+	"unsafe"
 )
 
 func GetVersionJson() string {
@@ -33,7 +33,7 @@ func GetLatest() Latest {
 	res := &Json{}
 	str := GetVersionJson()
 	err := json.Unmarshal([]byte(str), res)
-	if(err!=nil) {
+	if err != nil {
 		log.Fatal(err)
 	}
 	return res.Latest
@@ -41,7 +41,7 @@ func GetLatest() Latest {
 
 type Latest struct {
 	Snapshot string `json:"snapshot"`
-	Release string `json:"release"`
+	Release  string `json:"release"`
 }
 
 type Json struct {
