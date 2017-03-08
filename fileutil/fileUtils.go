@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+//ReadStringFromFile reads a string from a file
 func ReadStringFromFile(file string) string {
 	b, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -16,10 +17,12 @@ func ReadStringFromFile(file string) string {
 	return string(b)
 }
 
+//WriteStringToFile writes a string to a file
 func WriteStringToFile(str string, file string) {
 	ioutil.WriteFile(file, []byte(str), 0644)
 }
 
+//AppendStringToFile appends a string to a file, or creates a new file with the string if the file does not exist
 func AppendStringToFile(str string, file string) {
 	if FileExists(file) {
 		WriteStringToFile(ReadStringFromFile(file)+"\n"+str, file)
@@ -28,6 +31,7 @@ func AppendStringToFile(str string, file string) {
 	}
 }
 
+//FileExists checks to see if a file exists
 func FileExists(file string) bool {
 	if _, err := os.Stat(file); err == nil {
 		return true
@@ -35,6 +39,7 @@ func FileExists(file string) bool {
 	return false
 }
 
+//ReadLinesFromFile reads each line of the file into a string array
 func ReadLinesFromFile(fileName string) []string {
 	file, err := os.Open(fileName)
 	if err != nil {

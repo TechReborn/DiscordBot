@@ -9,6 +9,7 @@ import (
 	"unsafe"
 )
 
+//GetVersionJson returns the json file that contains all the minecraft versions
 func GetVersionJson() string {
 	return getJson("https://launchermeta.mojang.com/mc/game/version_manifest.json")
 }
@@ -29,6 +30,7 @@ func getJson(url string) string {
 	return s
 }
 
+//GetLatest returns an instance of the latest minecraft version information
 func GetLatest() Latest {
 	res := &Json{}
 	str := GetVersionJson()
@@ -39,11 +41,13 @@ func GetLatest() Latest {
 	return res.Latest
 }
 
+//Latest contains the lastest versions of minecraft
 type Latest struct {
 	Snapshot string `json:"snapshot"`
 	Release  string `json:"release"`
 }
 
+//Json is the main json object
 type Json struct {
 	Latest Latest `json:"latest"`
 }

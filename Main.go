@@ -9,13 +9,13 @@ import (
 )
 
 var (
-	Token         string
-	BotID         string
-	FirstCheck    bool
-	Connected     bool
-	LastLatest    string
-	LastSnapshot  string
-	DiscordClient *discordgo.Session
+	Token         string //The token of the bot user
+	BotID         string //The id of the bot
+	FirstCheck    bool //If the application has not done its first check for a new version
+	Connected     bool //If the discord bot is has connected
+	LastLatest    string //The latest release version of minecraft
+	LastSnapshot  string //The latest snapshot of minecraft
+	DiscordClient *discordgo.Session //The discord client
 )
 
 func main() {
@@ -53,7 +53,7 @@ func main() {
 	LoadDiscord()
 }
 
-//Based a lot off https://github.com/bwmarrin/discordgo/blob/master/examples/pingpong/main.go
+//LoadDiscord is based a lot off https://github.com/bwmarrin/discordgo/blob/master/examples/pingpong/main.go
 func LoadDiscord() {
 
 	Token = getToken()
