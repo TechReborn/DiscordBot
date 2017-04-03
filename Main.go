@@ -96,7 +96,6 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		var latest = minecraft.GetLatest()
 		s.ChannelMessageSend(m.ChannelID, "Latest snapshot: "+latest.Snapshot)
 		s.ChannelMessageSend(m.ChannelID, "Latest release: "+latest.Release)
-		return
 	}
 
 	if m.Content == "!verNotify" {
@@ -106,7 +105,6 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		fileutil.AppendStringToFile(m.ChannelID, "channels.txt")
 		s.ChannelMessageSend(m.ChannelID, "The bot will now annouce new minecraft versions here!")
-		return
 	}
 
 	if m.Content == "!commands" || m.Content == "!help" {
@@ -118,15 +116,12 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if isAuthorAdmin(m.Author) {
 			cmdList = cmdList + "`!addCom` "
 			cmdList = cmdList + "`!verNotify` "
-			return
 		}
 		s.ChannelMessageSend(m.ChannelID, "The following commands are available for you to use. "+cmdList)
-		return
 	}
 
 	if m.Content == "!myID" {
 		s.ChannelMessageSend(m.ChannelID, "You ID: `"+m.Author.ID+"`")
-		return
 	}
 
 	if strings.HasPrefix(m.Content, "!addCom") {
@@ -138,7 +133,6 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		textLine := strings.Replace(text, " ", "=", 1)
 		fileutil.AppendStringToFile(textLine, "commands.txt")
 		s.ChannelMessageSend(m.ChannelID, "The command has been added!")
-		return
 	}
 
 	if fileutil.FileExists("commands.txt") {
