@@ -2,19 +2,21 @@ package main
 
 import (
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/bwmarrin/discordgo"
 	"github.com/modmuss50/discordBot/fileutil"
 	"github.com/modmuss50/discordBot/minecraft"
-	"time"
 )
 
 var (
-	Token         string //The token of the bot user
-	BotID         string //The id of the bot
-	FirstCheck    bool //If the application has not done its first check for a new version
-	Connected     bool //If the discord bot is has connected
-	LastLatest    string //The latest release version of minecraft
-	LastSnapshot  string //The latest snapshot of minecraft
+	Token         string             //The token of the bot user
+	BotID         string             //The id of the bot
+	FirstCheck    bool               //If the application has not done its first check for a new version
+	Connected     bool               //If the discord bot is has connected
+	LastLatest    string             //The latest release version of minecraft
+	LastSnapshot  string             //The latest snapshot of minecraft
 	DiscordClient *discordgo.Session //The discord client
 )
 
@@ -34,7 +36,7 @@ func main() {
 				LastSnapshot = latest.Snapshot
 				FirstCheck = false
 
-			} else {
+			} else if fileutil.FileExists("channels.txt") {
 				for _, element := range fileutil.ReadLinesFromFile("channels.txt") {
 					if latest.Release != LastLatest {
 						DiscordClient.ChannelMessageSend(element, "A new release version of minecraft was just released! : "+latest.Release)
@@ -94,25 +96,68 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		var latest = minecraft.GetLatest()
 		s.ChannelMessageSend(m.ChannelID, "Latest snapshot: "+latest.Snapshot)
 		s.ChannelMessageSend(m.ChannelID, "Latest release: "+latest.Release)
+		return
 	}
+
 	if m.Content == "!verNotify" {
+		if !isAuthorAdmin(m.Author) {
+			s.ChannelMessageSend(m.ChannelID, "You do not have permission to run that command.")
+			return
+		}
 		fileutil.AppendStringToFile(m.ChannelID, "channels.txt")
 		s.ChannelMessageSend(m.ChannelID, "The bot will now annouce new minecraft versions here!")
+		return
 	}
 
-	if m.Content == "!commands" {
-		s.ChannelMessageSend(m.ChannelID, "The following commands are available for you to use. `!version`, `!issue`, `!wiki`, `!jei`")
+	if m.Content == "!commands" || m.Content == "!help" {
+		cmdList := ""
+		for _, element := range fileutil.ReadLinesFromFile("commands.txt") {
+			command := "!" + strings.Split(element, "=")[0]
+			cmdList = cmdList + "`" + command + "` "
+		}
+		if isAuthorAdmin(m.Author) {
+			cmdList = cmdList + "`!addCom` "
+			cmdList = cmdList + "`!verNotify` "
+			return
+		}
+		s.ChannelMessageSend(m.ChannelID, "The following commands are available for you to use. "+cmdList)
+		return
 	}
 
-	if m.Content == "!issuse" || m.Content == "!issue" {
-		s.ChannelMessageSend(m.ChannelID, "You can report an bug on our issuse tracker here: https://github.com/TechReborn/TechReborn/issues Please take a quick look to check that your isssus hasnt been reported before.")
+	if m.Content == "!myID" {
+		s.ChannelMessageSend(m.ChannelID, "You ID: `"+m.Author.ID+"`")
+		return
 	}
-	if m.Content == "!wiki" {
-		s.ChannelMessageSend(m.ChannelID, "We have a wiki located here: https://wiki.techreborn.ovh/ Please not not all the content is present at the current time.")
+
+	if strings.HasPrefix(m.Content, "!addCom") {
+		if !isAuthorAdmin(m.Author) {
+			s.ChannelMessageSend(m.ChannelID, "You do not have permission to run that command.")
+			return
+		}
+		text := strings.Replace(m.Content, "!addCom ", "", -1)
+		textLine := strings.Replace(text, " ", "=", 1)
+		fileutil.AppendStringToFile(textLine, "commands.txt")
+		s.ChannelMessageSend(m.ChannelID, "The command has been added!")
+		return
 	}
-	if m.Content == "!jei" {
-		s.ChannelMessageSend(m.ChannelID, "JEI is a great mod to use to findout how to craft something, TechReborn has full support. You can download JEI from here: https://minecraft.curseforge.com/projects/just-enough-items-jei")
+
+	if fileutil.FileExists("commands.txt") {
+		for _, element := range fileutil.ReadLinesFromFile("commands.txt") {
+			command := "!" + strings.Split(element, "=")[0]
+			reply := strings.Split(element, "=")[1]
+			if m.Content == command {
+				s.ChannelMessageSend(m.ChannelID, reply)
+			}
+		}
 	}
+
+}
+
+func isAuthorAdmin(user *discordgo.User) bool {
+	if user.ID != "98473211301212160" { //TODO have a file or some better way to do this.
+		return false
+	}
+	return true
 }
 
 //Loads the token from the file
