@@ -144,7 +144,10 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		response := mcpDiff.GetMCPDiff(split[0], split[1])
 		fmt.Print(response)
 		s.ChannelMessageSend(m.ChannelID, response)
-		s.ChannelMessageSend(m.ChannelID, "Done")
+		_,err := s.ChannelMessageSend(m.ChannelID, "Done")
+		if err != nil{
+			println(err)
+		}
 	}
 
 	if fileutil.FileExists("commands.txt") {
