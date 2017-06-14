@@ -8,6 +8,7 @@ import (
 	"github.com/bwmarrin/discordgo"
 	"github.com/modmuss50/discordBot/fileutil"
 	"github.com/modmuss50/discordBot/minecraft"
+	"github.com/modmuss50/MCP-Diff/mcpDiff"
 )
 
 var (
@@ -133,6 +134,13 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		textLine := strings.Replace(text, " ", "=", 1)
 		fileutil.AppendStringToFile(textLine, "commands.txt")
 		s.ChannelMessageSend(m.ChannelID, "The command has been added!")
+	}
+
+	if strings.HasPrefix(m.Content, "!mcpDiff") {
+		text := strings.Replace(m.Content, "!mcpDiff ", "", -1)
+		split := strings.Split(text, " ")
+		response := mcpDiff.GetMCPDiff(split[0], split[1])
+		s.ChannelMessageSend(m.ChannelID, response)
 	}
 
 	if fileutil.FileExists("commands.txt") {
