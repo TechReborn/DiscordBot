@@ -140,8 +140,9 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(m.Content, "!mcpDiff") {
 		text := strings.Replace(m.Content, "!mcpDiff ", "", -1)
 		split := strings.Split(text, " ")
-		s.ChannelMessageSend(m.ChannelID, "Loading old data from: " + split[0] +  "and new data from" + split[1])
+		s.ChannelMessageSend(m.ChannelID, "Loading old data from: " + split[0] +  " and new data from: " + split[1])
 		response := mcpDiff.GetMCPDiff(split[0], split[1])
+		fmt.Print(response)
 		s.ChannelMessageSend(m.ChannelID, response)
 		s.ChannelMessageSend(m.ChannelID, "Done")
 	}
