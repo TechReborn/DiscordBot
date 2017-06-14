@@ -10,6 +10,7 @@ import (
 	"github.com/modmuss50/discordBot/minecraft"
 	"github.com/modmuss50/MCP-Diff/mcpDiff"
 	"strconv"
+	"github.com/modmuss50/MCP-Diff/utils"
 )
 
 var (
@@ -92,6 +93,7 @@ func LoadDiscord() {
 func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	channel,_ := DiscordClient.Channel(m.ChannelID)
 	fmt.Println("#" + channel.Name + " <" + m.Author.Username + ">:" + m.Content)
+	utils.AppendStringToFile("#" + channel.Name + " <" + m.Author.Username + ">:" + m.Content, "discordLog.txt")
 	if m.Author.ID == BotID {
 		return
 	}
@@ -147,7 +149,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines)) + " changes in mappings")
 		if len(lines) > 100 {
 			s.ChannelMessageSend(m.ChannelID, "There are over 100 changes, bot will not message you them all. A fix is coming soon")
-			return 
+			return
 		}
 		if channel.IsPrivate {
 			if len(lines) == 0{
