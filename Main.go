@@ -146,7 +146,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "```" + response + "```")
 		_,err := s.ChannelMessageSend(m.ChannelID, "Done")
 		if err != nil{
-			println(err)
+			fmt.Println(err)
 		}
 	}
 
