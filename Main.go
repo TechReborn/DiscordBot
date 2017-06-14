@@ -117,6 +117,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if isAuthorAdmin(m.Author) {
 			cmdList = cmdList + "`!addCom` "
 			cmdList = cmdList + "`!verNotify` "
+			cmdList = cmdList + "`!mcpDiff 20170613-1.12(Older) 20170614-1.12(Newer)` "
 		}
 		s.ChannelMessageSend(m.ChannelID, "The following commands are available for you to use. "+cmdList)
 	}
