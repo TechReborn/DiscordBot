@@ -16,6 +16,7 @@ golang {
         build 'github.com/bwmarrin/discordgo'
         build 'github.com/modmuss50/MCP-Diff/mcpDiff'
         build 'github.com/cavaliercoder/grab'
+        forceUpdate = true
     }
     platforms = System.getProperty("platforms", "linux-amd64,windows-amd64,darwin-amd64")
 }
