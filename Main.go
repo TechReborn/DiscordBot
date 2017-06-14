@@ -143,7 +143,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "Loading old data from: " + split[0] +  " and new data from: " + split[1])
 		response := mcpDiff.GetMCPDiff(split[0], split[1])
 		fmt.Print(response)
-		s.ChannelMessageSend(m.ChannelID, response)
+		s.ChannelMessageSend(m.ChannelID, "```" + response + "```")
 		_,err := s.ChannelMessageSend(m.ChannelID, "Done")
 		if err != nil{
 			println(err)
