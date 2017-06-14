@@ -9,6 +9,7 @@ import (
 	"github.com/modmuss50/discordBot/fileutil"
 	"github.com/modmuss50/discordBot/minecraft"
 	"github.com/modmuss50/MCP-Diff/mcpDiff"
+	"strconv"
 )
 
 var (
@@ -140,15 +141,28 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(m.Content, "!mcpDiff") {
 		text := strings.Replace(m.Content, "!mcpDiff ", "", -1)
 		split := strings.Split(text, " ")
-		s.ChannelMessageSend(m.ChannelID, "Loading old data from: " + split[0] +  " and new data from: " + split[1])
 		response := mcpDiff.GetMCPDiff(split[0], split[1])
-		fmt.Print(response)
-		for _,line := range strings.Split(response, "\n"){
-			s.ChannelMessageSend(m.ChannelID, "```" + line + "```")
-		}
-		_,err := s.ChannelMessageSend(m.ChannelID, "Done")
-		if err != nil{
-			fmt.Println(err)
+		lines := strings.Split(response, "\n")
+		channel,_ := DiscordClient.Channel(m.ChannelID)
+		s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines)) + " changes in mappings")
+		if channel.IsPrivate {
+			if len(lines) == 0{
+				s.ChannelMessageSend(m.ChannelID, "No mappings changed")
+			} else {
+				for i,line := range lines{
+					s.ChannelMessageSend(m.ChannelID, "```#" + strconv.Itoa(i) + "	" + line + "```")
+				}
+			}
+		} else {
+			if len(lines) == 0{
+				s.ChannelMessageSend(m.ChannelID, "No mappings changed")
+			} else if len(lines) > 20 {
+				s.ChannelMessageSend(m.ChannelID, "Mappings changes are larger than 20 lines, please private message the bot the request")
+			} else {
+				for i,line := range lines{
+					s.ChannelMessageSend(m.ChannelID, "```#" + strconv.Itoa(i) + "	" + line + "```")
+				}
+			}
 		}
 	}
 
