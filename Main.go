@@ -11,6 +11,10 @@ import (
 	"github.com/modmuss50/MCP-Diff/mcpDiff"
 	"strconv"
 	"github.com/modmuss50/MCP-Diff/utils"
+	"net/url"
+	"net/http"
+	"bytes"
+	"io/ioutil"
 )
 
 var (
@@ -92,8 +96,12 @@ func LoadDiscord() {
 //Called when a message is posted
 func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	channel,_ := DiscordClient.Channel(m.ChannelID)
-	fmt.Println("#" + channel.Name + " <" + m.Author.Username + ">:" + m.Content)
-	utils.AppendStringToFile("#" + channel.Name + " <" + m.Author.Username + ">:" + m.Content, "discordLog.txt")
+	channelName := channel.Name
+	if channel.IsPrivate {
+		channelName = m.Author.Username
+	}
+	fmt.Println("#" + channelName + " <" + m.Author.Username + ">:" + m.Content)
+	utils.AppendStringToFile("#" + channelName + " <" + m.Author.Username + ">:" + m.Content, "discordLog.txt")
 	if m.Author.ID == BotID {
 		return
 	}
@@ -109,7 +117,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 		fileutil.AppendStringToFile(m.ChannelID, "channels.txt")
-		s.ChannelMessageSend(m.ChannelID, "The bot will now annouce new minecraft versions here!")
+		s.ChannelMessageSend(m.ChannelID, "The bot will now announce new minecraft versions here!")
 	}
 
 	if m.Content == "!commands" || m.Content == "!help" {
@@ -144,32 +152,17 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(m.Content, "!mcpDiff") {
 		text := strings.Replace(m.Content, "!mcpDiff ", "", -1)
 		split := strings.Split(text, " ")
-		response := mcpDiff.GetMCPDiff(split[0], split[1])
-		lines := strings.Split(response, "\n")
-		s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines)) + " changes in mappings")
-		if len(lines) > 100 {
-			s.ChannelMessageSend(m.ChannelID, "There are over 100 changes, bot will not message you them all. A fix is coming soon")
+		if len(split) != 2{
+			s.ChannelMessageSend(m.ChannelID, "Usage: !mcpDiff <old> <new> `e.g: !mcpDiff 20170601-1.11 20170614-1.12` you can find the list of MCP exports here: http://export.mcpbot.bspk.rs/")
 			return
 		}
-		if channel.IsPrivate {
-			if len(lines) == 0{
-				s.ChannelMessageSend(m.ChannelID, "No mappings changed")
-			} else {
-				for i,line := range lines{
-					s.ChannelMessageSend(m.ChannelID, "```#" + strconv.Itoa(i) + "	" + line + "```")
-				}
-			}
-		} else {
-			if len(lines) == 0{
-				s.ChannelMessageSend(m.ChannelID, "No mappings changed")
-			} else if len(lines) > 20 {
-				s.ChannelMessageSend(m.ChannelID, "Mappings changes are larger than 20 lines, please private message the bot the request")
-			} else {
-				for i,line := range lines{
-					s.ChannelMessageSend(m.ChannelID, "```#" + strconv.Itoa(i) + "	" + line + "```")
-				}
-			}
+		response, err := mcpDiff.GetMCPDiff(split[0], split[1])
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, err.Error())
+			return
 		}
+		lines := strings.Split(response, "\n")
+		s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines)) + " changes in mappings, you can view them here: " + createPaste(response))
 	}
 
 	if fileutil.FileExists("commands.txt") {
@@ -182,6 +175,35 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
+}
+
+func createPaste(text string) string {
+	apiUrl := "https://paste.modmuss50.me"
+	resource := "/api/create"
+	data := url.Values{}
+	data.Set("text", text)
+	data.Set("private", "1")
+	data.Set("expire", "120")
+
+	u, _ := url.ParseRequestURI(apiUrl)
+	u.Path = resource
+	urlStr := fmt.Sprintf("%v", u) // "https://api.com/user/"
+
+	client := &http.Client{}
+	r, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(data.Encode())) // <-- URL-encoded payload
+	r.Header.Add("Authorization", "auth_token=\"XXXXXXX\"")
+	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
+	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
+
+	resp, _ := client.Do(r)
+	fmt.Println(resp.Body)
+
+	if resp.StatusCode == 200 { // OK
+		bodyBytes, _ := ioutil.ReadAll(resp.Body)
+		bodyString := string(bodyBytes)
+		return bodyString
+	}
+	return "An error occurred when getting paste bin"
 }
 
 func isAuthorAdmin(user *discordgo.User) bool {
