@@ -90,7 +90,8 @@ func LoadDiscord() {
 
 //Called when a message is posted
 func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
-	fmt.Println(m.Author.Username + ":" + m.Content)
+	channel,_ := DiscordClient.Channel(m.ChannelID)
+	fmt.Println("#" + channel.Name + " <" + m.Author.Username + ">:" + m.Content)
 	if m.Author.ID == BotID {
 		return
 	}
@@ -143,8 +144,11 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		split := strings.Split(text, " ")
 		response := mcpDiff.GetMCPDiff(split[0], split[1])
 		lines := strings.Split(response, "\n")
-		channel,_ := DiscordClient.Channel(m.ChannelID)
 		s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines)) + " changes in mappings")
+		if len(lines) > 100 {
+			s.ChannelMessageSend(m.ChannelID, "There are over 100 changes, bot will not message you them all. A fix is coming soon")
+			return 
+		}
 		if channel.IsPrivate {
 			if len(lines) == 0{
 				s.ChannelMessageSend(m.ChannelID, "No mappings changed")
