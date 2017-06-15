@@ -131,6 +131,8 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			cmdList = cmdList + "`!verNotify` "
 		}
 		cmdList = cmdList + "`!mcpDiff <old> <new> (e.g: 20170614-1.12)` "
+		cmdList = cmdList + "`!gm <srg>"
+		cmdList = cmdList + "`!gf <srg>"
 		s.ChannelMessageSend(m.ChannelID, "The following commands are available for you to use. "+cmdList)
 	}
 
@@ -153,7 +155,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		text := strings.Replace(m.Content, "!mcpDiff ", "", -1)
 		split := strings.Split(text, " ")
 		if len(split) != 2{
-			s.ChannelMessageSend(m.ChannelID, "Usage: !mcpDiff <old> <new> `e.g: !mcpDiff 20170601-1.11 20170614-1.12` you can find the list of MCP exports here: http://export.mcpbot.bspk.rs/")
+			s.ChannelMessageSend(m.ChannelID, "Usage: !mcpDiff <old> <new> `e.g: !mcpDiff 20170601-1.11 20170614-1.12` or `!mcpDiff stable-29-1.10.2 stable-32-1.11`you can find the list of MCP exports here: http://export.mcpbot.bspk.rs/")
 			return
 		}
 		response, err := mcpDiff.GetMCPDiff(split[0], split[1])
@@ -162,7 +164,22 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 		lines := strings.Split(response, "\n")
-		s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines)) + " changes in mappings, you can view them here: " + createPaste(response))
+		if len(lines) -1 == 0 {
+			s.ChannelMessageSend(m.ChannelID, "No changes in mappings between " + split[0] + " and " + split[1])
+		} else {
+			s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines) -1) + " changes in mappings, you can view them here: " + createPaste(response))
+		}
+
+	}
+
+	if strings.HasPrefix(m.Content, "!gm") {
+		text := strings.Replace(m.Content, "!gm ", "", -1)
+		s.ChannelMessageSend(m.ChannelID, mcpDiff.LookupMethod(text))
+	}
+
+	if strings.HasPrefix(m.Content, "!gf") {
+		text := strings.Replace(m.Content, "!gf ", "", -1)
+		s.ChannelMessageSend(m.ChannelID, mcpDiff.LookupField(text))
 	}
 
 	if fileutil.FileExists("commands.txt") {
