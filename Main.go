@@ -158,11 +158,12 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, "Usage: !mcpDiff <old> <new> `e.g: !mcpDiff 20170601-1.11 20170614-1.12` or `!mcpDiff stable-29-1.10.2 stable-32-1.11`you can find the list of MCP exports here: http://export.mcpbot.bspk.rs/")
 			return
 		}
-		response, err := mcpDiff.GetMCPDiff(split[0], split[1])
+		response, info, err := mcpDiff.GetMCPDiff(split[0], split[1])
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, err.Error())
 			return
 		}
+		s.ChannelMessageSend(m.ChannelID, info)
 		lines := strings.Split(response, "\n")
 		if len(lines) -1 == 0 {
 			s.ChannelMessageSend(m.ChannelID, "No changes in mappings between " + split[0] + " and " + split[1])
