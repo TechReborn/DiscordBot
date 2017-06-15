@@ -17,6 +17,7 @@ golang {
         build 'github.com/modmuss50/MCP-Diff/mcpDiff'
         build 'github.com/cavaliercoder/grab'
         build 'github.com/patrickmn/go-cache'
+        forceUpdate = true
     }
     platforms = System.getProperty("platforms", "linux-amd64,windows-amd64,darwin-amd64")
 }
