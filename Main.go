@@ -200,7 +200,7 @@ func createPaste(text string, title string) string {
 	resource := "/api/create"
 	data := url.Values{}
 	data.Set("text", text)
-	data.Set("title", "title")
+	data.Set("title", title)
 	data.Set("private", "1")
 	data.Set("expire", "0")
 	data.Set("name", "TechReborn Discord Bot")
