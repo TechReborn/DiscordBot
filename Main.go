@@ -168,7 +168,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if len(lines) -1 == 0 {
 			s.ChannelMessageSend(m.ChannelID, "No changes in mappings between " + split[0] + " and " + split[1])
 		} else {
-			s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines) -1) + " changes in mappings, you can view them here: " + createPaste(response))
+			s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines) -1) + " changes in mappings, you can view them here: " + createPaste(response, info))
 		}
 
 	}
@@ -195,13 +195,15 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 }
 
-func createPaste(text string) string {
+func createPaste(text string, title string) string {
 	apiUrl := "https://paste.modmuss50.me"
 	resource := "/api/create"
 	data := url.Values{}
 	data.Set("text", text)
+	data.Set("title", "title")
 	data.Set("private", "1")
-	data.Set("expire", "120")
+	data.Set("expire", "0")
+	data.Set("name", "TechReborn Discord Bot")
 
 	u, _ := url.ParseRequestURI(apiUrl)
 	u.Path = resource
