@@ -97,7 +97,7 @@ func LoadDiscord() {
 func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	channel,_ := DiscordClient.Channel(m.ChannelID)
 	channelName := channel.Name
-	if channel.IsPrivate {
+	if channel.Type == discordgo.ChannelTypeDM || channel.Type == discordgo.ChannelTypeGroupDM {
 		channelName = m.Author.Username
 	}
 	fmt.Println("#" + channelName + " <" + m.Author.Username + ">:" + m.Content)
