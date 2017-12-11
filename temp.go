@@ -77,15 +77,15 @@ func handleTempMessage(messageContent string) (string, bool) {
 }
 
 func handleC(input int) string {
-	return fmt.Sprintf("%d C is equal to: %sF and %sK", input, FloatToString(CtoF(float64(input))), FloatToString(CtoK(float64(input))))
+	return fmt.Sprintf("%dC is equal to: %sF and %sK", input, FloatToString(CtoF(float64(input))), FloatToString(CtoK(float64(input))))
 }
 
 func handleF(input int) string {
-	return fmt.Sprintf("%d F is equal to: %sC and %sK", input, FloatToString(FtoC(float64(input))), FloatToString(FtoK(float64(input))))
+	return fmt.Sprintf("%dF is equal to: %sC and %sK", input, FloatToString(FtoC(float64(input))), FloatToString(FtoK(float64(input))))
 }
 
 func handleK(input int) string {
-	return fmt.Sprintf("%d K is equal to: %sC and %sF", input, FloatToString(KtoC(float64(input))), FloatToString(KtoF(float64(input))))
+	return fmt.Sprintf("%dK is equal to: %sC and %sF", input, FloatToString(KtoC(float64(input))), FloatToString(KtoF(float64(input))))
 }
 
 func FloatToString(input_num float64) string {
