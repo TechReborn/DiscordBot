@@ -120,6 +120,11 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "The bot will now announce new minecraft versions here!")
 	}
 
+	value, handled := handleTempMessage(m.Content)
+	if handled {
+		s.ChannelMessageSend(m.ChannelID, value)
+	}
+
 	if m.Content == "!commands" || m.Content == "!help" {
 		cmdList := ""
 		for _, element := range fileutil.ReadLinesFromFile("commands.txt") {
