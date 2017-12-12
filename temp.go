@@ -148,7 +148,3 @@ func TrimSuffix(s, suffix string) string {
 	}
 	return s
 }
-
-func main(){
-	fmt.Println(handleTempMessage("The weather today is 20f and it was 6C yesterday. where as 6000 k is the heat of the sun"))
-}
