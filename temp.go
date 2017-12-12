@@ -55,6 +55,55 @@ func round(val float64) float64 {
 }
 
 func handleTempMessage(messageContent string) (string, bool) {
+	split := strings.Split(messageContent, " ")
+
+	result := ""
+
+	for i := 0; i < len(split); i++ {
+		str := split[i]
+		if strings.HasSuffix(strings.ToLower(str), "c"){
+			if len(str) != 1 {
+				int, err := strconv.Atoi(TrimSuffix(strings.ToLower(str), "c"))
+				if err == nil {
+					result = result + handleC(int) + "\n"
+				}
+			} else if i > 1{
+				int, err := strconv.Atoi(split[i -1])
+				if err == nil {
+					result = result + handleC(int) + "\n"
+				}
+			}
+		} else if strings.HasSuffix(strings.ToLower(str), "f"){
+			if len(str) != 1 {
+				int, err := strconv.Atoi(TrimSuffix(strings.ToLower(str), "f"))
+				if err == nil {
+					result = result + handleF(int) + "\n"
+				}
+			} else if i > 1{
+				int, err := strconv.Atoi(split[i -1])
+				if err == nil {
+					result = result + handleF(int) + "\n"
+				}
+			}
+		} else if strings.HasSuffix(strings.ToLower(str), "k"){
+			if len(str) != 1 {
+				int, err := strconv.Atoi(TrimSuffix(strings.ToLower(str), "k"))
+				if err == nil {
+					result = result + handleK(int) + "\n"
+				}
+			} else if i > 1{
+				int, err := strconv.Atoi(split[i -1])
+				if err == nil {
+					result = result + handleK(int) + "\n"
+				}
+			}
+		}
+	}
+
+	if len(result) > 0 {
+		return result, true
+	}
+
 	if strings.HasPrefix(messageContent, "!temp ") {
 		unit := strings.ToLower(messageContent[6:][:1])
 		int, err := strconv.Atoi(messageContent[8:])
@@ -91,4 +140,15 @@ func handleK(input int) string {
 func FloatToString(input_num float64) string {
 	// to convert a float number to a string
 	return strconv.FormatFloat(input_num, 'f', 1, 64)
+}
+
+func TrimSuffix(s, suffix string) string {
+	if strings.HasSuffix(s, suffix) {
+		s = s[:len(s)-len(suffix)]
+	}
+	return s
+}
+
+func main(){
+	fmt.Println(handleTempMessage("The weather today is 20f and it was 6C yesterday. where as 6000 k is the heat of the sun"))
 }
