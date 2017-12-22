@@ -55,55 +55,6 @@ func round(val float64) float64 {
 }
 
 func handleTempMessage(messageContent string) (string, bool) {
-	split := strings.Split(messageContent, " ")
-
-	result := ""
-
-	for i := 0; i < len(split); i++ {
-		str := split[i]
-		if strings.HasSuffix(strings.ToLower(str), "c"){
-			if len(str) != 1 {
-				int, err := strconv.Atoi(TrimSuffix(strings.ToLower(str), "c"))
-				if err == nil {
-					result = result + handleC(int) + "\n"
-				}
-			} else if i > 1{
-				int, err := strconv.Atoi(split[i -1])
-				if err == nil {
-					result = result + handleC(int) + "\n"
-				}
-			}
-		} else if strings.HasSuffix(strings.ToLower(str), "f"){
-			if len(str) != 1 {
-				int, err := strconv.Atoi(TrimSuffix(strings.ToLower(str), "f"))
-				if err == nil {
-					result = result + handleF(int) + "\n"
-				}
-			} else if i > 1{
-				int, err := strconv.Atoi(split[i -1])
-				if err == nil {
-					result = result + handleF(int) + "\n"
-				}
-			}
-		} else if strings.HasSuffix(strings.ToLower(str), "k"){
-			if len(str) != 1 {
-				int, err := strconv.Atoi(TrimSuffix(strings.ToLower(str), "k"))
-				if err == nil {
-					result = result + handleK(int) + "\n"
-				}
-			} else if i > 1{
-				int, err := strconv.Atoi(split[i -1])
-				if err == nil {
-					result = result + handleK(int) + "\n"
-				}
-			}
-		}
-	}
-
-	if len(result) > 0 {
-		return result, true
-	}
-
 	if strings.HasPrefix(messageContent, "!temp ") {
 		unit := strings.ToLower(messageContent[6:][:1])
 		int, err := strconv.Atoi(messageContent[8:])
