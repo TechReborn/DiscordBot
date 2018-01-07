@@ -15,6 +15,7 @@ import (
 	"net/http"
 	"bytes"
 	"io/ioutil"
+	"github.com/TechReborn/DiscordBot/curse"
 )
 
 var (
@@ -28,6 +29,8 @@ var (
 )
 
 func main() {
+
+	curse.Load()
 
 	FirstCheck = true
 
@@ -125,6 +128,10 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, value)
 	}
 
+	if curse.HandleCurseMessage(s, m) {
+		return
+	}
+
 	if m.Content == "!commands" || m.Content == "!help" {
 		cmdList := ""
 		for _, element := range fileutil.ReadLinesFromFile("commands.txt") {
@@ -138,6 +145,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		cmdList = cmdList + "`!mcpDiff <old> <new> (e.g: 20170614-1.12)` "
 		cmdList = cmdList + "`!gm <srg>"
 		cmdList = cmdList + "`!gf <srg>"
+		cmdList = cmdList + "`!curse <username>"
 		s.ChannelMessageSend(m.ChannelID, "The following commands are available for you to use. "+cmdList)
 	}
 
