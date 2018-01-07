@@ -4,9 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"time"
-
 	"github.com/bwmarrin/discordgo"
-	"github.com/modmuss50/discordBot/fileutil"
 	"github.com/modmuss50/discordBot/minecraft"
 	"github.com/modmuss50/MCP-Diff/mcpDiff"
 	"strconv"
@@ -16,6 +14,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"github.com/TechReborn/DiscordBot/curse"
+	"github.com/modmuss50/goutils"
 )
 
 var (
@@ -46,8 +45,8 @@ func main() {
 				LastSnapshot = latest.Snapshot
 				FirstCheck = false
 
-			} else if fileutil.FileExists("channels.txt") {
-				for _, element := range fileutil.ReadLinesFromFile("channels.txt") {
+			} else if goutils.FileExists("channels.txt") {
+				for _, element := range goutils.ReadLinesFromFile("channels.txt") {
 					if latest.Release != LastLatest {
 						DiscordClient.ChannelMessageSend(element, "A new release version of minecraft was just released! : "+latest.Release)
 					}
@@ -119,7 +118,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, "You do not have permission to run that command.")
 			return
 		}
-		fileutil.AppendStringToFile(m.ChannelID, "channels.txt")
+		goutils.AppendStringToFile(m.ChannelID, "channels.txt")
 		s.ChannelMessageSend(m.ChannelID, "The bot will now announce new minecraft versions here!")
 	}
 
@@ -134,7 +133,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if m.Content == "!commands" || m.Content == "!help" {
 		cmdList := ""
-		for _, element := range fileutil.ReadLinesFromFile("commands.txt") {
+		for _, element := range goutils.ReadLinesFromFile("commands.txt") {
 			command := "!" + strings.Split(element, "=")[0]
 			cmdList = cmdList + "`" + command + "` "
 		}
@@ -160,7 +159,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		text := strings.Replace(m.Content, "!addCom ", "", -1)
 		textLine := strings.Replace(text, " ", "=", 1)
-		fileutil.AppendStringToFile(textLine, "commands.txt")
+		goutils.AppendStringToFile(textLine, "commands.txt")
 		s.ChannelMessageSend(m.ChannelID, "The command has been added!")
 	}
 
@@ -196,8 +195,8 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, mcpDiff.LookupField(text))
 	}
 
-	if fileutil.FileExists("commands.txt") {
-		for _, element := range fileutil.ReadLinesFromFile("commands.txt") {
+	if goutils.FileExists("commands.txt") {
+		for _, element := range goutils.ReadLinesFromFile("commands.txt") {
 			command := "!" + strings.Split(element, "=")[0]
 			reply := strings.Split(element, "=")[1]
 			if m.Content == command {
@@ -248,5 +247,5 @@ func isAuthorAdmin(user *discordgo.User) bool {
 
 //Loads the token from the file
 func getToken() string {
-	return fileutil.ReadStringFromFile("token.txt")
+	return goutils.ReadStringFromFile("token.txt")
 }
