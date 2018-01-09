@@ -2,9 +2,7 @@ package curse
 
 import (
 	"log"
-	"os"
 	"fmt"
-	"compress/bzip2"
 	"bytes"
 	"github.com/modmuss50/goutils"
 	"encoding/json"
@@ -15,6 +13,7 @@ import (
 	"sort"
 	"github.com/patrickmn/go-cache"
 	"time"
+	"compress/bzip2"
 )
 
 var (
@@ -39,13 +38,18 @@ func HandleCurseMessage(s *discordgo.Session, m *discordgo.MessageCreate) bool {
 		data, found := Cache.Get("data")
 		if !found {
 			s.ChannelMessageSend(m.ChannelID, "Curse Cache Expired, re-downloading")
-			goutils.DownloadURL("http://clientupdate-v6.cursecdn.com/feed/addons/432/v10/complete.json.bz2", "curse.json.bz2")
-			jsonStr := LoadFromBz2("curse.json.bz2")
+			reader, dwerr := goutils.Download("http://clientupdate-v6.cursecdn.com/feed/addons/432/v10/complete.json.bz2")
+			if dwerr != nil{
+				s.ChannelMessageSend(m.ChannelID, "failed to download curse data")
+				return true
+			}
+			jsonStr := LoadFromBz2(reader)
 			var database AddonDatabase
 			err := json.Unmarshal([]byte(jsonStr), &database)
 			if err != nil {
 				log.Fatal(err)
 				s.ChannelMessageSend(m.ChannelID, "failed to read json file")
+				return true
 			}
 
 			data = database
@@ -102,17 +106,11 @@ func getDownloadCount(number json.Number) int64 {
 	return int
 }
 
-func LoadFromBz2(filename string) string {
-	bzip_file, err := os.Open(filename)
-	defer bzip_file.Close()
-	if err != nil {
-		log.Panic(err)
-	}
-	reader := bzip2.NewReader(bzip_file)
+func LoadFromBz2(byteArray []byte) string {
+	reader := bzip2.NewReader(bytes.NewReader(byteArray))
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(reader)
 	s := buf.String()
-	bzip_file.Close()
 	return s
 
 }

@@ -13,8 +13,8 @@ import (
 	"net/http"
 	"bytes"
 	"io/ioutil"
-	"github.com/TechReborn/DiscordBot/curse"
 	"github.com/modmuss50/goutils"
+	"github.com/modmuss50/discordBot/curse"
 )
 
 var (
