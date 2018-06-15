@@ -4,10 +4,10 @@ import "encoding/json"
 
 type AddonDatabase struct {
 	TimeStamp int64 `json:"timestamp"`
-	Addons []Addon `json:"data"`
+	Addons []AddonDB `json:"data"`
 }
 
-type Addon struct {
+type AddonDB struct {
 	Id int `json:"id"`
 	Name string `json:"name"`
 	Authors []Author `json:"authors"`

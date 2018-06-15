@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 	"github.com/bwmarrin/discordgo"
-	"github.com/modmuss50/discordBot/minecraft"
+	"github.com/TechReborn/DiscordBot/curse"
 	"github.com/modmuss50/MCP-Diff/mcpDiff"
 	"strconv"
 	"github.com/modmuss50/MCP-Diff/utils"
@@ -14,7 +14,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"github.com/modmuss50/goutils"
-	"github.com/modmuss50/discordBot/curse"
+	"github.com/TechReborn/DiscordBot/minecraft"
 )
 
 var (
