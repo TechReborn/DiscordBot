@@ -6,8 +6,8 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/modmuss50/CAV2"
 	"sort"
-	"strconv"
 	"strings"
+	"time"
 )
 
 func Load() {
@@ -28,35 +28,23 @@ func HandleCurseMessage(s *discordgo.Session, m *discordgo.MessageCreate) bool {
 		}
 		username := messageSplit[1]
 
+		start := time.Now()
+
 		database, err := cav2.Search(username)
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "There was an error searching for projects on curse")
 			return true
 		}
 
-		var addons []int
+		sort.Sort(SortAddon(database))
+
+		var downloads float64 = 0
 		for _, addon := range database {
 			for _, author := range addon.Authors {
 				if strings.EqualFold(author.Name, username) {
-					addons = append(addons, addon.ID)
+					downloads += addon.DownloadCount
 				}
 			}
-		}
-
-		if len(addons) == 0 {
-			s.ChannelMessageSend(m.ChannelID, "No addons found for "+username)
-			return true
-		}
-
-		var downloads float64 = 0
-		addonInfo, err := cav2.GetAddons(addons)
-		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "Something bad happened when loading detailed addon data from curse")
-			return true
-		}
-
-		for _, addon := range addonInfo {
-			downloads += addon.DownloadCount
 		}
 
 		if downloads == 0 {
@@ -64,16 +52,21 @@ func HandleCurseMessage(s *discordgo.Session, m *discordgo.MessageCreate) bool {
 			return true
 		}
 
-		sort.Sort(SortAddon(addonInfo))
+		count := 0
 		projects := ""
-		for _, addon := range addonInfo {
-			projects = projects + addon.Name + " : `" + humanize.Comma(round(addon.DownloadCount)) + "`\n"
+		for _, addon := range database {
+			for _, author := range addon.Authors {
+				if strings.EqualFold(author.Name, username) {
+					projects = projects + addon.Name + " : `" + humanize.Comma(round(addon.DownloadCount)) + "`\n"
+					count++
+				}
+			}
+
 		}
 
 		s.ChannelMessageSend(m.ChannelID, projects)
-
-		fmt.Println(humanize.Comma(round(downloads)))
-		s.ChannelMessageSend(m.ChannelID, username+" has `"+humanize.Comma(round(downloads))+"` total downloads over `"+strconv.Itoa(len(addons))+"` projects")
+		since := time.Since(start)
+		s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("%s has `%s` total downloads over `%d` projects . Loaded in %s", username, humanize.Comma(round(downloads)), count, since))
 	}
 	return false
 }
