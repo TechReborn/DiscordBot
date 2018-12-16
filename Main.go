@@ -40,11 +40,11 @@ func main() {
 				return
 			}
 			var latest = minecraft.GetLatest()
+			DiscordClient.UpdateStatus(0, latest.Snapshot+" "+latest.Release)
 			if FirstCheck == true {
 				LastLatest = latest.Release
 				LastSnapshot = latest.Snapshot
 				FirstCheck = false
-
 			} else if goutils.FileExists("channels.txt") {
 				for _, element := range goutils.ReadLinesFromFile("channels.txt") {
 					if latest.Release != LastLatest {
@@ -54,7 +54,6 @@ func main() {
 						DiscordClient.ChannelMessageSend(element, "A new snapshot version of minecraft was just released! : "+latest.Snapshot)
 					}
 				}
-
 				LastLatest = latest.Release
 				LastSnapshot = latest.Snapshot
 			}
