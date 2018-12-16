@@ -1,20 +1,20 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
+	"github.com/TechReborn/DiscordBot/curse"
+	"github.com/TechReborn/DiscordBot/minecraft"
+	"github.com/bwmarrin/discordgo"
+	"github.com/modmuss50/MCP-Diff/mcpDiff"
+	"github.com/modmuss50/MCP-Diff/utils"
+	"github.com/modmuss50/goutils"
+	"io/ioutil"
+	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
-	"github.com/bwmarrin/discordgo"
-	"github.com/TechReborn/DiscordBot/curse"
-	"github.com/modmuss50/MCP-Diff/mcpDiff"
-	"strconv"
-	"github.com/modmuss50/MCP-Diff/utils"
-	"net/url"
-	"net/http"
-	"bytes"
-	"io/ioutil"
-	"github.com/modmuss50/goutils"
-	"github.com/TechReborn/DiscordBot/minecraft"
 )
 
 var (
@@ -97,13 +97,20 @@ func LoadDiscord() {
 
 //Called when a message is posted
 func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
-	channel,_ := DiscordClient.Channel(m.ChannelID)
+	if goutils.FileExists("discord_muted.txt") {
+		for _, str := range goutils.ReadLinesFromFile("discord_muted.txt") {
+			if str == m.GuildID {
+				return
+			}
+		}
+	}
+	channel, _ := DiscordClient.Channel(m.ChannelID)
 	channelName := channel.Name
 	if channel.Type == discordgo.ChannelTypeDM || channel.Type == discordgo.ChannelTypeGroupDM {
 		channelName = m.Author.Username
 	}
 	fmt.Println("#" + channelName + " <" + m.Author.Username + ">:" + m.Content)
-	utils.AppendStringToFile("#" + channelName + " <" + m.Author.Username + ">:" + m.Content, "discordLog.txt")
+	utils.AppendStringToFile("#"+channelName+" <"+m.Author.Username+">:"+m.Content, "discordLog.txt")
 	if m.Author.ID == BotID {
 		return
 	}
@@ -120,6 +127,15 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		goutils.AppendStringToFile(m.ChannelID, "channels.txt")
 		s.ChannelMessageSend(m.ChannelID, "The bot will now announce new minecraft versions here!")
+	}
+
+	if m.Content == "!mute" {
+		if !isAuthorAdmin(m.Author) {
+			s.ChannelMessageSend(m.ChannelID, "You do not have permission to run that command.")
+			return
+		}
+		goutils.AppendStringToFile(m.GuildID, "discord_muted.txt")
+		s.ChannelMessageSend(m.ChannelID, "The bot will no longer response to commands in this server!")
 	}
 
 	value, handled := handleTempMessage(m.Content)
@@ -166,7 +182,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(m.Content, "!mcpDiff") {
 		text := strings.Replace(m.Content, "!mcpDiff ", "", -1)
 		split := strings.Split(text, " ")
-		if len(split) != 2{
+		if len(split) != 2 {
 			s.ChannelMessageSend(m.ChannelID, "Usage: !mcpDiff <old> <new> `e.g: !mcpDiff 20170601-1.11 20170614-1.12` or `!mcpDiff stable-29-1.10.2 stable-32-1.11`you can find the list of MCP exports here: http://export.mcpbot.bspk.rs/")
 			return
 		}
@@ -177,10 +193,10 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		s.ChannelMessageSend(m.ChannelID, info)
 		lines := strings.Split(response, "\n")
-		if len(lines) -1 == 0 {
-			s.ChannelMessageSend(m.ChannelID, "No changes in mappings between " + split[0] + " and " + split[1])
+		if len(lines)-1 == 0 {
+			s.ChannelMessageSend(m.ChannelID, "No changes in mappings between "+split[0]+" and "+split[1])
 		} else {
-			s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines) -1) + " changes in mappings, you can view them here: " + createPaste(response, info))
+			s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines)-1)+" changes in mappings, you can view them here: "+createPaste(response, info))
 		}
 
 	}
