@@ -10,14 +10,6 @@ import (
 	"time"
 )
 
-func Load() {
-	//logs with with cav
-	err := cav2.SetupDefaultConfig()
-	if err != nil {
-		panic(err)
-	}
-}
-
 func HandleCurseMessage(s *discordgo.Session, m *discordgo.MessageCreate) bool {
 	if strings.HasPrefix(m.Content, "!curse") {
 		messageSplit := strings.Split(m.Content, " ")

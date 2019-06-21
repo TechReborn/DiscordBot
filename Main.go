@@ -29,8 +29,6 @@ var (
 
 func main() {
 
-	curse.Load()
-
 	FirstCheck = true
 
 	ticker := time.NewTicker(time.Second * 30)
@@ -40,7 +38,7 @@ func main() {
 				return
 			}
 			var latest = minecraft.GetLatest()
-			DiscordClient.UpdateStatus(0, latest.Snapshot+" "+latest.Release)
+			DiscordClient.UpdateStatus(0, latest.Snapshot)
 			if FirstCheck == true {
 				LastLatest = latest.Release
 				LastSnapshot = latest.Snapshot

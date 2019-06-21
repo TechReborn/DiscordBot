@@ -12,3 +12,4 @@ discordBot
 discordLog.txt
 auth_config.json
 *.exe
+discord_muted.txt

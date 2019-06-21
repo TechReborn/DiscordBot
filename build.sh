@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo 'Updating libs'
-go get -u github.com/TechReborn/DiscordBot
+go get -u
 
 rm -rf output
 mkdir output
