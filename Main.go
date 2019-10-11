@@ -1,18 +1,10 @@
 package main
 
 import (
-	"bytes"
 	"fmt"
-	"github.com/TechReborn/DiscordBot/curse"
 	"github.com/TechReborn/DiscordBot/minecraft"
 	"github.com/bwmarrin/discordgo"
-	"github.com/modmuss50/MCP-Diff/mcpDiff"
-	"github.com/modmuss50/MCP-Diff/utils"
 	"github.com/modmuss50/goutils"
-	"io/ioutil"
-	"net/http"
-	"net/url"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -107,10 +99,11 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		channelName = m.Author.Username
 	}
 	fmt.Println("#" + channelName + " <" + m.Author.Username + ">:" + m.Content)
-	utils.AppendStringToFile("#"+channelName+" <"+m.Author.Username+">:"+m.Content, "discordLog.txt")
+
 	if m.Author.ID == BotID {
 		return
 	}
+
 	if m.Content == "!version" {
 		var latest = minecraft.GetLatest()
 		s.ChannelMessageSend(m.ChannelID, "Latest snapshot: "+latest.Snapshot)
@@ -140,10 +133,6 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, value)
 	}
 
-	if curse.HandleCurseMessage(s, m) {
-		return
-	}
-
 	if m.Content == "!commands" || m.Content == "!help" {
 		cmdList := ""
 		for _, element := range goutils.ReadLinesFromFile("commands.txt") {
@@ -154,10 +143,6 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			cmdList = cmdList + "`!addCom` "
 			cmdList = cmdList + "`!verNotify` "
 		}
-		cmdList = cmdList + "`!mcpDiff <old> <new> (e.g: 20170614-1.12)` "
-		cmdList = cmdList + "`!gm <srg>"
-		cmdList = cmdList + "`!gf <srg>"
-		cmdList = cmdList + "`!curse <username>"
 		s.ChannelMessageSend(m.ChannelID, "The following commands are available for you to use. "+cmdList)
 	}
 
@@ -176,38 +161,6 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		s.ChannelMessageSend(m.ChannelID, "The command has been added!")
 	}
 
-	if strings.HasPrefix(m.Content, "!mcpDiff") {
-		text := strings.Replace(m.Content, "!mcpDiff ", "", -1)
-		split := strings.Split(text, " ")
-		if len(split) != 2 {
-			s.ChannelMessageSend(m.ChannelID, "Usage: !mcpDiff <old> <new> `e.g: !mcpDiff 20170601-1.11 20170614-1.12` or `!mcpDiff stable-29-1.10.2 stable-32-1.11`you can find the list of MCP exports here: http://export.mcpbot.bspk.rs/")
-			return
-		}
-		response, info, err := mcpDiff.GetMCPDiff(split[0], split[1])
-		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, err.Error())
-			return
-		}
-		s.ChannelMessageSend(m.ChannelID, info)
-		lines := strings.Split(response, "\n")
-		if len(lines)-1 == 0 {
-			s.ChannelMessageSend(m.ChannelID, "No changes in mappings between "+split[0]+" and "+split[1])
-		} else {
-			s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(lines)-1)+" changes in mappings, you can view them here: "+createPaste(response, info))
-		}
-
-	}
-
-	if strings.HasPrefix(m.Content, "!gm") {
-		text := strings.Replace(m.Content, "!gm ", "", -1)
-		s.ChannelMessageSend(m.ChannelID, mcpDiff.LookupMethod(text))
-	}
-
-	if strings.HasPrefix(m.Content, "!gf") {
-		text := strings.Replace(m.Content, "!gf ", "", -1)
-		s.ChannelMessageSend(m.ChannelID, mcpDiff.LookupField(text))
-	}
-
 	if goutils.FileExists("commands.txt") {
 		for _, element := range goutils.ReadLinesFromFile("commands.txt") {
 			command := "!" + strings.Split(element, "=")[0]
@@ -218,37 +171,6 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 	}
 
-}
-
-func createPaste(text string, title string) string {
-	apiUrl := "https://paste.modmuss50.me"
-	resource := "/api/create"
-	data := url.Values{}
-	data.Set("text", text)
-	data.Set("title", title)
-	data.Set("private", "1")
-	data.Set("expire", "0")
-	data.Set("name", "TechReborn Discord Bot")
-
-	u, _ := url.ParseRequestURI(apiUrl)
-	u.Path = resource
-	urlStr := fmt.Sprintf("%v", u) // "https://api.com/user/"
-
-	client := &http.Client{}
-	r, _ := http.NewRequest("POST", urlStr, bytes.NewBufferString(data.Encode())) // <-- URL-encoded payload
-	r.Header.Add("Authorization", "auth_token=\"XXXXXXX\"")
-	r.Header.Add("Content-Type", "application/x-www-form-urlencoded")
-	r.Header.Add("Content-Length", strconv.Itoa(len(data.Encode())))
-
-	resp, _ := client.Do(r)
-	fmt.Println(resp.Body)
-
-	if resp.StatusCode == 200 { // OK
-		bodyBytes, _ := ioutil.ReadAll(resp.Body)
-		bodyString := string(bodyBytes)
-		return bodyString
-	}
-	return "An error occurred when getting paste bin"
 }
 
 func isAuthorAdmin(user *discordgo.User) bool {
