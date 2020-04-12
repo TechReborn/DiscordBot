@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"github.com/TechReborn/DiscordBot/minecraft"
 	"github.com/bwmarrin/discordgo"
 	"github.com/modmuss50/goutils"
 	"strings"
@@ -29,7 +28,7 @@ func main() {
 			if !Connected {
 				return
 			}
-			lat, err := minecraft.GetLatest()
+			lat, err := GetLatest()
 			if err != nil {
 				fmt.Println(err)
 				return
@@ -111,7 +110,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "!version" {
-		version, err := minecraft.GetLatest()
+		version, err := GetLatest()
 		if err != nil {
 			s.ChannelMessageSend(m.ChannelID, "An error occurred.")
 		} else {
