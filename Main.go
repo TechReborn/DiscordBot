@@ -29,7 +29,13 @@ func main() {
 			if !Connected {
 				return
 			}
-			var latest = minecraft.GetLatest()
+			lat, err := minecraft.GetLatest()
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+
+			var latest = lat
 			DiscordClient.UpdateStatus(0, latest.Snapshot)
 			if FirstCheck == true {
 				LastLatest = latest.Release
@@ -105,9 +111,14 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	if m.Content == "!version" {
-		var latest = minecraft.GetLatest()
-		s.ChannelMessageSend(m.ChannelID, "Latest snapshot: "+latest.Snapshot)
-		s.ChannelMessageSend(m.ChannelID, "Latest release: "+latest.Release)
+		version, err := minecraft.GetLatest()
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "An error occurred.")
+		} else {
+			s.ChannelMessageSend(m.ChannelID, "Latest snapshot: "+version.Snapshot)
+			s.ChannelMessageSend(m.ChannelID, "Latest release: "+version.Release)
+		}
+
 	}
 
 	if m.Content == "!verNotify" {
