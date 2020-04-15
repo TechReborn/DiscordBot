@@ -26,12 +26,12 @@ func main() {
 	go func() {
 		for range ticker.C {
 			if !Connected {
-				return
+				continue
 			}
 			lat, err := GetLatest()
 			if err != nil {
 				fmt.Println(err)
-				return
+				continue
 			}
 
 			var latest = lat
