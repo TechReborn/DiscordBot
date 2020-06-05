@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
+	"github.com/TechReborn/DiscordBot/file"
 	"github.com/bwmarrin/discordgo"
-	"github.com/modmuss50/goutils"
 	"strings"
 	"time"
 )
@@ -11,93 +11,111 @@ import (
 var (
 	Token         string             //The token of the bot user
 	BotID         string             //The id of the bot
-	FirstCheck    bool               //If the application has not done its first check for a new version
-	Connected     bool               //If the discord bot is has connected
-	LastLatest    string             //The latest release version of minecraft
-	LastSnapshot  string             //The latest snapshot of minecraft
 	DiscordClient *discordgo.Session //The discord client
 )
 
 func main() {
 
-	FirstCheck = true
+	err := populateInitialJiraVersions()
+	if err != nil {
+		fmt.Println("Failed to load jira versions")
+		panic(err)
+	}
+
+	err = populateInitialGameVersions()
+	if err != nil {
+		fmt.Println("Failed to load jira versions")
+		panic(err)
+	}
 
 	ticker := time.NewTicker(time.Second * 30)
 	go func() {
 		for range ticker.C {
-			if !Connected {
-				continue
-			}
-			lat, err := GetLatest()
-			if err != nil {
-				fmt.Println(err)
-				continue
-			}
-
-			var latest = lat
-			DiscordClient.UpdateStatus(0, latest.Snapshot)
-			if FirstCheck == true {
-				LastLatest = latest.Release
-				LastSnapshot = latest.Snapshot
-				FirstCheck = false
-			} else if goutils.FileExists("channels.txt") {
-				for _, element := range goutils.ReadLinesFromFile("channels.txt") {
-					if latest.Release != LastLatest {
-						DiscordClient.ChannelMessageSend(element, "A new release version of minecraft was just released! : "+latest.Release)
-					}
-					if latest.Snapshot != LastSnapshot {
-						DiscordClient.ChannelMessageSend(element, "A new snapshot version of minecraft was just released! : "+latest.Snapshot)
-					}
-				}
-				LastLatest = latest.Release
-				LastSnapshot = latest.Snapshot
-			}
+			updateCheck()
 		}
 	}()
 
-	LoadDiscord()
+	err = LoadDiscord()
+	if err != nil {
+		fmt.Println("Failed to load discord")
+		panic(err)
+	}
+}
+
+func updateCheck() {
+	go jiraUpdateCheck(postJiraMessage)
+	go gameUpdateCheck(postGameMessage)
+}
+
+func postGameMessage(message string) error {
+	fmt.Println(message)
+
+	lines, err := file.ReadLines("channels.txt")
+
+	if err != nil {
+		return err
+	}
+
+	for _, element := range lines {
+		DiscordClient.ChannelMessageSend(element, message)
+	}
+
+	return nil
+}
+
+func postJiraMessage(message string) error {
+	fmt.Println(message)
+
+	lines, err := file.ReadLines("jira_channels.txt")
+
+	if err != nil {
+		return err
+	}
+
+	for _, element := range lines {
+		DiscordClient.ChannelMessageSend(element, message)
+	}
+
+	return nil
 }
 
 //LoadDiscord is based a lot off https://github.com/bwmarrin/discordgo/blob/master/examples/pingpong/main.go
-func LoadDiscord() {
-
-	Token = getToken()
-	dg, err := discordgo.New("Bot " + Token)
-	DiscordClient = dg
+func LoadDiscord() error {
+	t, err := getToken()
 	if err != nil {
-		fmt.Println("error creating Discord session,", err)
-		return
+		return err
 	}
+
+	Token = t
+
+	dg, err := discordgo.New("Bot " + Token)
+	if err != nil {
+		return err
+	}
+
+	DiscordClient = dg
 
 	u, err := dg.User("@me")
 	if err != nil {
-		fmt.Println("error obtaining account details,", err)
+		return err
 	}
+
 	BotID = u.ID
 
 	dg.AddHandler(handleMessage)
 
 	err = dg.Open()
 	if err != nil {
-		fmt.Println("error opening connection,", err)
-		return
+		return err
 	}
 
 	fmt.Println("Bot is now running.  Press CTRL-C to exit.")
-	Connected = true
 	<-make(chan struct{})
-	return
+	return nil
 }
 
 //Called when a message is posted
 func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
-	if goutils.FileExists("discord_muted.txt") {
-		for _, str := range goutils.ReadLinesFromFile("discord_muted.txt") {
-			if str == m.GuildID {
-				return
-			}
-		}
-	}
 	channel, _ := DiscordClient.Channel(m.ChannelID)
 	channelName := channel.Name
 	if channel.Type == discordgo.ChannelTypeDM || channel.Type == discordgo.ChannelTypeGroupDM {
@@ -109,24 +127,37 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	if m.Content == "!version" {
-		version, err := GetLatest()
-		if err != nil {
-			s.ChannelMessageSend(m.ChannelID, "An error occurred.")
-		} else {
-			s.ChannelMessageSend(m.ChannelID, "Latest snapshot: "+version.Snapshot)
-			s.ChannelMessageSend(m.ChannelID, "Latest release: "+version.Release)
+	if m.Content == "!gameNotify" {
+		if isAuthorAdmin(m.Author) {
+			err := file.AppendString(m.ChannelID, "channels.txt")
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "The bot will now announce new minecraft versions here!")
+			} else {
+				s.ChannelMessageSend(m.ChannelID, "An error occurred, contact bot owner")
+			}
 		}
-
 	}
 
-	if m.Content == "!verNotify" {
-		if !isAuthorAdmin(m.Author) {
-			s.ChannelMessageSend(m.ChannelID, "You do not have permission to run that command.")
-			return
+	if m.Content == "!jiraNotify" {
+		if isAuthorAdmin(m.Author) {
+			err := file.AppendString(m.ChannelID, "jira_channels.txt")
+			if err != nil {
+				s.ChannelMessageSend(m.ChannelID, "The bot will now announce new jira versions here!")
+			} else {
+				s.ChannelMessageSend(m.ChannelID, "An error occurred, contact bot owner")
+			}
 		}
-		goutils.AppendStringToFile(m.ChannelID, "channels.txt")
-		s.ChannelMessageSend(m.ChannelID, "The bot will now announce new minecraft versions here!")
+	}
+
+	if file.Exists("discord_muted.txt") {
+		lines, err := file.ReadLines("discord_muted.txt")
+		if err == nil {
+			for _, str := range lines {
+				if str == m.GuildID {
+					return
+				}
+			}
+		}
 	}
 
 	if m.Content == "!mute" {
@@ -134,20 +165,22 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, "You do not have permission to run that command.")
 			return
 		}
-		goutils.AppendStringToFile(m.GuildID, "discord_muted.txt")
-		s.ChannelMessageSend(m.ChannelID, "The bot will no longer response to commands in this server!")
-	}
-
-	value, handled := handleTempMessage(m.Content)
-	if handled {
-		s.ChannelMessageSend(m.ChannelID, value)
+		err := file.AppendString(m.GuildID, "discord_muted.txt")
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "The bot will no longer response to commands in this server!")
+		} else {
+			s.ChannelMessageSend(m.ChannelID, "An error occurred, contact bot owner")
+		}
 	}
 
 	if m.Content == "!commands" || m.Content == "!help" {
 		cmdList := ""
-		for _, element := range goutils.ReadLinesFromFile("commands.txt") {
-			command := "!" + strings.Split(element, "=")[0]
-			cmdList = cmdList + "`" + command + "` "
+		lines, err := file.ReadLines("commands.txt")
+		if err == nil {
+			for _, element := range lines {
+				command := "!" + strings.Split(element, "=")[0]
+				cmdList = cmdList + "`" + command + "` "
+			}
 		}
 		if isAuthorAdmin(m.Author) {
 			cmdList = cmdList + "`!addCom` "
@@ -167,20 +200,28 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 		text := strings.Replace(m.Content, "!addCom ", "", -1)
 		textLine := strings.Replace(text, " ", "=", 1)
-		goutils.AppendStringToFile(textLine, "commands.txt")
-		s.ChannelMessageSend(m.ChannelID, "The command has been added!")
+
+		err := file.AppendString(textLine, "commands.txt")
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "The command has been added!")
+		} else {
+			s.ChannelMessageSend(m.ChannelID, "An error occurred, contact bot owner")
+		}
+
 	}
 
-	if goutils.FileExists("commands.txt") {
-		for _, element := range goutils.ReadLinesFromFile("commands.txt") {
-			command := "!" + strings.Split(element, "=")[0]
-			reply := strings.Split(element, "=")[1]
-			if m.Content == command {
-				s.ChannelMessageSend(m.ChannelID, reply)
+	if file.Exists("commands.txt") {
+		lines, err := file.ReadLines("commands.txt")
+		if err == nil {
+			for _, element := range lines {
+				command := "!" + strings.Split(element, "=")[0]
+				reply := strings.Split(element, "=")[1]
+				if m.Content == command {
+					s.ChannelMessageSend(m.ChannelID, reply)
+				}
 			}
 		}
 	}
-
 }
 
 func isAuthorAdmin(user *discordgo.User) bool {
@@ -191,6 +232,6 @@ func isAuthorAdmin(user *discordgo.User) bool {
 }
 
 //Loads the token from the file
-func getToken() string {
-	return goutils.ReadStringFromFile("token.txt")
+func getToken() (string, error) {
+	return file.ReadString("token.txt")
 }

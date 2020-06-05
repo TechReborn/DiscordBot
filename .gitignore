@@ -7,7 +7,6 @@
 *.iml
 /data/
 commands.txt
-curse.json.bz2
 discordBot
 discordLog.txt
 auth_config.json
