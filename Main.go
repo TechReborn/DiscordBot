@@ -131,7 +131,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Content == "!gameNotify" {
 		if isAuthorAdmin(m.Author) {
 			err := file.AppendString(m.ChannelID, "channels.txt")
-			if err != nil {
+			if err == nil {
 				s.ChannelMessageSend(m.ChannelID, "The bot will now announce new minecraft versions here!")
 			} else {
 				log.Println("Failed to write game channels", err)
@@ -143,7 +143,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if m.Content == "!jiraNotify" {
 		if isAuthorAdmin(m.Author) {
 			err := file.AppendString(m.ChannelID, "jira_channels.txt")
-			if err != nil {
+			if err == nil {
 				s.ChannelMessageSend(m.ChannelID, "The bot will now announce new jira versions here!")
 			} else {
 				log.Println("Failed to write jira channels", err)
@@ -169,7 +169,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 		err := file.AppendString(m.GuildID, "discord_muted.txt")
-		if err != nil {
+		if err == nil {
 			s.ChannelMessageSend(m.ChannelID, "The bot will no longer response to commands in this server!")
 		} else {
 			s.ChannelMessageSend(m.ChannelID, "An error occurred, contact bot owner")
@@ -205,7 +205,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		textLine := strings.Replace(text, " ", "=", 1)
 
 		err := file.AppendString(textLine, "commands.txt")
-		if err != nil {
+		if err == nil {
 			s.ChannelMessageSend(m.ChannelID, "The command has been added!")
 		} else {
 			s.ChannelMessageSend(m.ChannelID, "An error occurred, contact bot owner")
