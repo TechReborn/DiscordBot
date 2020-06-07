@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/TechReborn/DiscordBot/file"
 	"github.com/bwmarrin/discordgo"
+	"log"
 	"strings"
 	"time"
 )
@@ -133,6 +134,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, "The bot will now announce new minecraft versions here!")
 			} else {
+				log.Println("Failed to write game channels", err)
 				s.ChannelMessageSend(m.ChannelID, "An error occurred, contact bot owner")
 			}
 		}
@@ -144,6 +146,7 @@ func handleMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			if err != nil {
 				s.ChannelMessageSend(m.ChannelID, "The bot will now announce new jira versions here!")
 			} else {
+				log.Println("Failed to write jira channels", err)
 				s.ChannelMessageSend(m.ChannelID, "An error occurred, contact bot owner")
 			}
 		}
