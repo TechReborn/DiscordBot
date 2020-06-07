@@ -52,7 +52,7 @@ func gameVersionAsString(version Version) string {
 }
 
 func getGameVersions() ([]Version, error) {
-	jsonStr, err := getJson("https://gamemeta.mojang.com/mc/game/version_manifest.json")
+	jsonStr, err := getJson("https://launchermeta.mojang.com/mc/game/version_manifest.json")
 
 	if err != nil {
 		return nil, err
