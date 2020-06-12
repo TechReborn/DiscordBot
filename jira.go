@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 )
 
 var jiraVersionsCache []string
@@ -35,9 +36,11 @@ func jiraUpdateCheck(callback func(message string) error) error {
 
 		if !contains(jiraVersionsCache, version.Name) {
 			jiraVersionsCache = append(jiraVersionsCache, version.Name)
-			err = callback(jiraAsString(version))
-			if err != nil {
-				return err
+			if !strings.Contains(version.Name, "Future Version") {
+				err = callback(jiraAsString(version))
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
